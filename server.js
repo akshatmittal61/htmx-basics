@@ -13,11 +13,13 @@ app.get("/", async (req, res) => {
 	return res.status(200).sendFile("/index.html");
 });
 
-app.get("/temperature", async (req, res) => {
-	const file = await fetch(`http://localhost:${PORT}/temperature.html`)
-		.then((res) => res.text())
-		.then((data) => data);
-	return res.status(200).send(file);
+["temperature", "polling"].forEach((route) => {
+	app.get(`/${route}`, async (req, res) => {
+		const file = await fetch(`http://localhost:${PORT}/${route}.html`)
+			.then((res) => res.text())
+			.then((data) => data);
+		return res.status(200).send(file);
+	});
 });
 
 app.get("/api/health", (req, res) => {
@@ -27,13 +29,21 @@ app.get("/api/health", (req, res) => {
 app.use("/api", routes);
 
 app.post("/convert", async (req, res) => {
-    await sleep(2000);
-    const c = parseFloat(req.body.celsius);
-    const f = (c * 9/5) + 32;
-    return res.status(200).send(`
+	await sleep(2000);
+	const c = parseFloat(req.body.celsius);
+	const f = (c * 9) / 5 + 32;
+	return res.status(200).send(`
         <h1>Temperature Conversion</h1>
         <p>${c.toFixed(2)}°C is ${f.toFixed(2)}°F</p>
-    `)
+    `);
+});
+
+let counter = 0;
+
+app.get("/poll", async (req, res) => {
+    await sleep(2000);
+    counter++;
+    return res.status(200).json({ counter });
 });
 
 app.listen(PORT, () => {
