@@ -1,6 +1,7 @@
 import express from "express";
 import { PORT } from "./config/index.js";
 import routes from "./routes/index.js";
+import { sleep } from "./utils/functions.js";
 
 const app = express();
 
@@ -8,8 +9,15 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.get("/", (req, res) => {
-	res.sendFile("index.html");
+app.get("/", async (req, res) => {
+	return res.status(200).sendFile("/index.html");
+});
+
+app.get("/temperature", async (req, res) => {
+	const file = await fetch(`http://localhost:${PORT}/temperature.html`)
+		.then((res) => res.text())
+		.then((data) => data);
+	return res.status(200).send(file);
 });
 
 app.get("/api/health", (req, res) => {
@@ -17,6 +25,16 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api", routes);
+
+app.post("/convert", async (req, res) => {
+    await sleep(2000);
+    const c = parseFloat(req.body.celsius);
+    const f = (c * 9/5) + 32;
+    return res.status(200).send(`
+        <h1>Temperature Conversion</h1>
+        <p>${c.toFixed(2)}°C is ${f.toFixed(2)}°F</p>
+    `)
+});
 
 app.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);
