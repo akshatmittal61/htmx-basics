@@ -1,7 +1,11 @@
-import users from "../data/users.js";
+import { sleep } from "../utils/functions.js";
 
 export const getAllUsers = async (req, res) => {
 	try {
+		const users = await fetch("https://jsonplaceholder.typicode.com/users")
+			.then((res) => res.json())
+			.then((data) => data);
+		await sleep(5000);
 		return res.status(200).send(`
             <h1>Users</h1>
             <ul>
