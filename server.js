@@ -13,7 +13,7 @@ app.get("/", async (req, res) => {
 	return res.status(200).sendFile("/index.html");
 });
 
-["temperature", "polling"].forEach((route) => {
+["temperature", "polling", "search"].forEach((route) => {
 	app.get(`/${route}`, async (req, res) => {
 		const file = await fetch(`http://localhost:${PORT}/${route}.html`)
 			.then((res) => res.text())
@@ -41,9 +41,44 @@ app.post("/convert", async (req, res) => {
 let counter = 0;
 
 app.get("/poll", async (req, res) => {
-    await sleep(2000);
-    counter++;
-    return res.status(200).json({ counter });
+	await sleep(2000);
+	counter++;
+	return res.status(200).json({ counter });
+});
+
+app.post("/api/search", async (req, res) => {
+	const { query } = req.body;
+	const data = await fetch("https://jsonplaceholder.typicode.com/users")
+		.then((res) => res.json())
+		.then((data) => data)
+		.catch((err) => {
+			console.log(err);
+			return [];
+		});
+	const users = data.filter(
+		(user) =>
+			user.name.toLowerCase().includes(query.toLowerCase()) ||
+			user.email.toLowerCase().includes(query.toLowerCase())
+	);
+	if (users.length === 0) {
+		return res.status(200).send(`
+            <tr>
+                <td colspan="2">No results found</td>
+            </tr>
+        `);
+	}
+	return res.status(200).send(`
+        ${users
+			.map(
+				(post) => `
+            <tr>
+                <td>${post.name}</td>
+                <td>${post.email}</td>
+            </tr>
+        `
+			)
+			.join("")}
+    `);
 });
 
 app.listen(PORT, () => {
