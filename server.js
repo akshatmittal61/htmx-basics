@@ -9,13 +9,13 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-	return res.status(200).sendFile("/index.html");
-});
+const htmlRoutes = ["", "temperature", "polling", "search"];
 
-["temperature", "polling", "search"].forEach((route) => {
+htmlRoutes.forEach((route) => {
 	app.get(`/${route}`, async (req, res) => {
-		const file = await fetch(`http://localhost:${PORT}/${route}.html`)
+		const file = await fetch(
+			`http://localhost:${PORT}/${route === "" ? "index" : route}.html`
+		)
 			.then((res) => res.text())
 			.then((data) => data);
 		return res.status(200).send(file);
