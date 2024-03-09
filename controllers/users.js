@@ -2,10 +2,13 @@ import { sleep } from "../utils/functions.js";
 
 export const getAllUsers = async (req, res) => {
 	try {
-		const users = await fetch("https://jsonplaceholder.typicode.com/users")
+		const limit = +(req.query.limit || 10);
+		const users = await fetch(
+			`https://jsonplaceholder.typicode.com/users?_limit=${limit}`
+		)
 			.then((res) => res.json())
 			.then((data) => data);
-		await sleep(5000);
+		await sleep(2500);
 		return res.status(200).send(`
             <h1>Users</h1>
             <ul>
